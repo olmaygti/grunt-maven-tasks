@@ -103,10 +103,13 @@ module.exports = function(grunt) {
     configureDestination(options, task);
     configureMaven(options, task);
 
-    grunt.task.run('maven:version:' + options.version,
+    grunt.task.run(
+      'maven:rebaseMaster',
+      'maven:version:' + options.version,
       'maven:package',
       'maven:deploy-file',
-      'maven:version:' + options.nextVersion + ':deleteTag');
+      'maven:version:' + options.nextVersion + ':deleteTag'
+    );
   }
 
   function getFileNameBase(options) {
@@ -213,6 +216,26 @@ module.exports = function(grunt) {
         grunt.log.writeln('Deployed ' + options.file.cyan + ' to ' + options.url.cyan);
       }
       done(err);
+    });
+  });
+
+  grunt.registerTask('maven:rebaseMaster', function () {
+    var done = this.async();
+    isGitRepo(function(isGit) {
+      if (!isGit) { return done(); }
+      grunt.util.spawn({ cmd: 'git', args: ['rev-parse', '--abbrev-ref', 'HEAD']}, function(err, result, branch) {
+        if (!err) {
+          var currentBranch = result.stdout;
+          // TODO CHECK WE're IN RELEASES
+          grunt.util.spawn({ cmd: 'git', args: ['checkout', 'master']}, function(err, result, branch) {
+            if (!err) {
+              grunt.util.spawn({ cmd: 'git', args: ['rebase', currentBranch]}, function(err, result, branch) {
+                done();
+              });
+            }
+          });
+        }
+      });
     });
   });
 
