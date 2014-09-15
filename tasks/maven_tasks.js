@@ -226,14 +226,18 @@ module.exports = function(grunt) {
       grunt.util.spawn({ cmd: 'git', args: ['rev-parse', '--abbrev-ref', 'HEAD']}, function(err, result, branch) {
         if (!err) {
           var currentBranch = result.stdout;
-          // TODO CHECK WE're IN RELEASES
-          grunt.util.spawn({ cmd: 'git', args: ['checkout', 'master']}, function(err, result, branch) {
-            if (!err) {
-              grunt.util.spawn({ cmd: 'git', args: ['rebase', currentBranch]}, function(err, result, branch) {
-                done();
-              });
-            }
-          });
+          if (currentBranch.match(/^releases\/v(?:\d){1}(?:\.\d){0,2}$/) ) {
+            grunt.util.spawn({ cmd: 'git', args: ['checkout', 'master']}, function(err, result, branch) {
+              if (!err) {
+                grunt.util.spawn({ cmd: 'git', args: ['rebase', currentBranch]}, function(err, result, branch) {
+                  done();
+                });
+              }
+            });
+          } else {
+            grunt.log.error('NOT IN THE CORRECT BRANCH: ' + /^releases\/v(?:\d){1}(?:\.\d){0,2}$/);
+            done(false);
+          }
         }
       });
     });
