@@ -1,6 +1,18 @@
 # grunt-maven-tasks
 
-> Grunt maven tasks - install artifacts locally or deploy and release articats to maven repository.
+> Grunt maven tasks - install artifacts locally or deploy and release artifats to maven repository.
+
+
+## Odobo Custom Modifications
+
+We've modified the "maven:release" task of this module to add some automations and adapt the task to our current gitflow.
+
+Former behaviour was making a commit with the version to be released, then it created a tag with that name, and finally it was increasing the version number of the project. That automations could provoke someone "releasing" from an improper branch and the git repo to get dirty with wrong commits and tags.
+
+Now the behaviour is pretty much the same but, to adapt it to our gitflow model, we're just allowing the "maven:release" task to be executed in a release branch, where our RC will be (that is, current branch has to be named releases/v$versionNumber).
+If that condition is met, then the task will automatically change to master branch, put all the contents of the release branch into master and, finally, continue with the previous described behaviour (commiting, tagging and version increasing).
+
+If the local repo where the commands are being launch is dirty, the task will fail. Future enhancements should automatically stash tracked files and remove untracked ones before the operation begins, unstashing and restoring them after the process is finished.
 
 ## Getting Started
 This plugin requires Grunt `~0.4.1`
